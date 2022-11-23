@@ -27,8 +27,14 @@ func CreateArtist(request *dto.CreateArtistRequest) (*dto.ArtistDTO, error) {
 func UpdateArtist(request *dto.UpdateArtistRequest) (*dto.ArtistDTO, error) {
 	var artist models.Artist
 	utils.ConverseStruct(request, &artist)
-	result := db.Save(&artist)
+
+	result := db.First(&artist)
 	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	updateResult := db.Save(&artist)
+	if updateResult.Error != nil {
 		return nil, result.Error
 	}
 	return &dto.ArtistDTO{

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/doduykhang/musik/pkg/dto"
 	"github.com/gorilla/mux"
 )
 
@@ -25,6 +26,18 @@ func JsonResponse(w *http.ResponseWriter, x interface{}) {
 	(*w).Write(res)
 }
 
+func ErrorResponse(w *http.ResponseWriter, message string, code int) {
+	(*w).Header().Set("Content-Type", "application/json")
+	res, _ := json.Marshal(
+		dto.ErrorResponse{
+			Code:    code,
+			Message: message,
+		},
+	)
+	(*w).WriteHeader(code)
+	(*w).Write(res)
+}
+
 func ConverseStruct[S any, D any](source S, destination D) {
 	jsonRes, _ := json.Marshal(source)
 	json.Unmarshal(jsonRes, destination)
@@ -38,5 +51,5 @@ func GetIDFromRequest(r *http.Request) (uint, error) {
 		return 0, err
 	}
 	ID := uint(ID64)
-	return ID, err
+	return ID, nil
 }
