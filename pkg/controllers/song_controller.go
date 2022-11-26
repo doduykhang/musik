@@ -10,17 +10,51 @@ import (
 
 var (
 	songService services.SongService
+	fileService services.FileService
 )
 
 func init() {
 	songService = services.GetSongService()
+	fileService = services.GetLocalFileService()
 }
 
 func CreateSong(w http.ResponseWriter, r *http.Request) {
 	var request dto.CreateSongRequest
-	utils.ParseBody(r, &request)
+	err := r.ParseMultipartForm(10 << 20)
 
-	err := validate.Struct(&request)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	err = decoder.Decode(&request, r.PostForm)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	//get audio
+	audioByte, audioName, err := utils.GetFileByteWithName(r, "audio")
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	request.AudioFile = dto.MultipartForm{Bytes: audioByte, Name: audioName}
+
+	//get cover
+	corverByte, corverName, err := utils.GetFileByteWithName(r, "cover")
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	request.CoverFile = dto.MultipartForm{Bytes: corverByte, Name: corverName}
+
+	err = validate.Struct(&request)
 
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 400)
@@ -52,6 +86,90 @@ func UpdateSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.JsonResponse(&w, updatedSong)
+}
+
+func UpdateSongAudio(w http.ResponseWriter, r *http.Request) {
+	var request dto.UpdateAudioRequet
+	err := r.ParseMultipartForm(10 << 20)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	err = decoder.Decode(&request, r.PostForm)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	//get audio
+	audioByte, audioName, err := utils.GetFileByteWithName(r, "audio")
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	request.AudioFile = dto.MultipartForm{Bytes: audioByte, Name: audioName}
+
+	err = validate.Struct(&request)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	createdSong, err := songService.UpdateSongAudio(&request)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+	utils.JsonResponse(&w, createdSong)
+
+}
+
+func UpdateSongCover(w http.ResponseWriter, r *http.Request) {
+	var request dto.UpdateCoverRequet
+	err := r.ParseMultipartForm(10 << 20)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	err = decoder.Decode(&request, r.PostForm)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	//get audio
+	audioByte, audioName, err := utils.GetFileByteWithName(r, "cover")
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	request.CoverFile = dto.MultipartForm{Bytes: audioByte, Name: audioName}
+
+	err = validate.Struct(&request)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	createdSong, err := songService.UpdateSongCover(&request)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+	utils.JsonResponse(&w, createdSong)
+
 }
 
 func DeleteSong(w http.ResponseWriter, r *http.Request) {
@@ -108,4 +226,23 @@ func FindSongs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.JsonResponse(&w, songs)
+}
+
+func TestUpload(w http.ResponseWriter, r *http.Request) {
+	bytes, handler, err := utils.GetFile(r, "audio")
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+
+	_, _, err = fileService.SaveFile(bytes, "temp-folder", handler.Filename)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+
+	utils.JsonResponse(&w, &dto.MessageDTO{
+		Message: "ok",
+	})
 }

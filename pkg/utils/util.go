@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 
@@ -82,4 +83,30 @@ func GetPagination(r *http.Request) (*dto.Pagination, error) {
 		Page: page,
 		Size: pageSize,
 	}, nil
+}
+func GetFile(r *http.Request, field string) ([]byte, *multipart.FileHeader, error) {
+	// Parse our multipart form, 10 << 20 specifies a maximum
+	// upload of 10 MB files.
+	r.ParseMultipartForm(10 << 20)
+
+	file, handler, err := r.FormFile(field)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer file.Close()
+
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return fileBytes, handler, nil
+}
+
+func GetFileByteWithName(r *http.Request, field string) ([]byte, string, error) {
+	bytes, handler, err := GetFile(r, field)
+	if err != nil {
+		return nil, "", err
+	}
+	return bytes, handler.Filename, err
 }

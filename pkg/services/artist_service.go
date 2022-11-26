@@ -5,7 +5,6 @@ import (
 
 	"github.com/doduykhang/musik/pkg/dto"
 	"github.com/doduykhang/musik/pkg/models"
-	"github.com/doduykhang/musik/pkg/utils"
 )
 
 type ArtistService interface {
@@ -24,7 +23,10 @@ func GetAritstServive() ArtistService {
 
 func (service *artistServiceImpl) CreateArtist(request *dto.CreateArtistRequest) (*dto.ArtistDTO, error) {
 	var artist models.Artist
-	utils.ConverseStruct(request, &artist)
+	err := Map(&artist, request)
+	if err != nil {
+		return nil, err
+	}
 	result := db.Create(&artist)
 	if result.Error != nil {
 		return nil, result.Error
@@ -40,11 +42,15 @@ func (service *artistServiceImpl) CreateArtist(request *dto.CreateArtistRequest)
 
 func (service *artistServiceImpl) UpdateArtist(request *dto.UpdateArtistRequest) (*dto.ArtistDTO, error) {
 	var artist models.Artist
-	utils.ConverseStruct(request, &artist)
 
-	result := db.First(&artist)
+	result := db.First(&artist, request.ID)
 	if result.Error != nil {
 		return nil, result.Error
+	}
+
+	err := Map(&artist, request)
+	if err != nil {
+		return nil, err
 	}
 
 	updateResult := db.Save(&artist)
@@ -69,7 +75,10 @@ func (service *artistServiceImpl) DeleteArtist(ID uint) (*dto.ArtistDTO, error) 
 	}
 	db.Delete(&artist)
 	var artistDTO dto.ArtistDTO
-	utils.ConverseStruct(&artist, &artistDTO)
+	err := Map(&artistDTO, &artist)
+	if err != nil {
+		return nil, err
+	}
 	return &artistDTO, nil
 }
 
@@ -82,7 +91,10 @@ func (service *artistServiceImpl) FindArtists() (*[]dto.ArtistDTO, error) {
 	}
 
 	var artistDTOs []dto.ArtistDTO
-	utils.ConverseStruct(&artists, &artistDTOs)
+	err := Map(&artistDTOs, &artists)
+	if err != nil {
+		return nil, err
+	}
 	return &artistDTOs, nil
 }
 
@@ -96,6 +108,10 @@ func (service *artistServiceImpl) FindArtist(ID uint) (*dto.ArtistDTO, error) {
 	}
 
 	var artistDTO dto.ArtistDTO
-	utils.ConverseStruct(&artist, &artistDTO)
+
+	err := Map(&artistDTO, &artist)
+	if err != nil {
+		return nil, err
+	}
 	return &artistDTO, nil
 }

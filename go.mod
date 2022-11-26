@@ -3,6 +3,7 @@ module github.com/doduykhang/musik
 go 1.19
 
 require (
+	github.com/dranikpg/dto-mapper v0.1.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
