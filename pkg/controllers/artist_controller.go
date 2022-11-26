@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/doduykhang/musik/pkg/dto"
@@ -18,9 +19,30 @@ func init() {
 
 func CreateArtist(w http.ResponseWriter, r *http.Request) {
 	var request dto.CreateArtistRequest
-	utils.ParseBody(r, &request)
 
-	err := validate.Struct(&request)
+	err := r.ParseMultipartForm(10 << 20)
+
+	if err != nil {
+		fmt.Println("test1")
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	err = decoder.Decode(&request, r.PostForm)
+
+	if err != nil {
+		fmt.Println("test2")
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	//get audio
+	imageByte, imageName, err := utils.GetFileByteWithName(r, "image")
+
+	request.ImageFile.Name = imageName
+	request.ImageFile.Bytes = imageByte
+
+	err = validate.Struct(&request)
 
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 400)

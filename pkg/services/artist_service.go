@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 
+	"github.com/doduykhang/musik/pkg/constant"
 	"github.com/doduykhang/musik/pkg/dto"
 	"github.com/doduykhang/musik/pkg/models"
 )
@@ -27,17 +28,20 @@ func (service *artistServiceImpl) CreateArtist(request *dto.CreateArtistRequest)
 	if err != nil {
 		return nil, err
 	}
+
+	err = uploadArtistImage(&request.ImageFile, &artist)
+	if err != nil {
+		return nil, err
+	}
 	result := db.Create(&artist)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return &dto.ArtistDTO{
-		CreateArtistRequest: *request,
-		BaseDTO: dto.BaseDTO{
-			ID:        artist.ID,
-			CreatedAt: artist.CreatedAt,
-		},
-	}, nil
+
+	var artistDTO dto.ArtistDTO
+	Map(&artistDTO, &artist)
+
+	return &artistDTO, nil
 }
 
 func (service *artistServiceImpl) UpdateArtist(request *dto.UpdateArtistRequest) (*dto.ArtistDTO, error) {
@@ -57,13 +61,11 @@ func (service *artistServiceImpl) UpdateArtist(request *dto.UpdateArtistRequest)
 	if updateResult.Error != nil {
 		return nil, result.Error
 	}
-	return &dto.ArtistDTO{
-		CreateArtistRequest: *&request.CreateArtistRequest,
-		BaseDTO: dto.BaseDTO{
-			ID:        artist.ID,
-			CreatedAt: artist.CreatedAt,
-		},
-	}, nil
+
+	var artistDTO dto.ArtistDTO
+	Map(&artistDTO, &artist)
+
+	return &artistDTO, nil
 }
 
 func (service *artistServiceImpl) DeleteArtist(ID uint) (*dto.ArtistDTO, error) {
@@ -114,4 +116,16 @@ func (service *artistServiceImpl) FindArtist(ID uint) (*dto.ArtistDTO, error) {
 		return nil, err
 	}
 	return &artistDTO, nil
+}
+
+func uploadArtistImage(image *dto.MultipartForm, artist *models.Artist) error {
+	_, _, err := fileService.SaveFile(image.Bytes, constant.ARTIST_IMAGE_PATH, image.Name)
+
+	if err != nil {
+		return err
+	}
+
+	artist.Image = constant.AUDIO_PATH + image.Name
+
+	return nil
 }
