@@ -8,7 +8,21 @@ import (
 	"github.com/doduykhang/musik/pkg/utils"
 )
 
-func CreateArtist(request *dto.CreateArtistRequest) (*dto.ArtistDTO, error) {
+type ArtistService interface {
+	CreateArtist(*dto.CreateArtistRequest) (*dto.ArtistDTO, error)
+	UpdateArtist(*dto.UpdateArtistRequest) (*dto.ArtistDTO, error)
+	DeleteArtist(uint) (*dto.ArtistDTO, error)
+	FindArtists() (*[]dto.ArtistDTO, error)
+	FindArtist(uint) (*dto.ArtistDTO, error)
+}
+
+type artistServiceImpl struct{}
+
+func GetAritstServive() ArtistService {
+	return &artistServiceImpl{}
+}
+
+func (service *artistServiceImpl) CreateArtist(request *dto.CreateArtistRequest) (*dto.ArtistDTO, error) {
 	var artist models.Artist
 	utils.ConverseStruct(request, &artist)
 	result := db.Create(&artist)
@@ -24,7 +38,7 @@ func CreateArtist(request *dto.CreateArtistRequest) (*dto.ArtistDTO, error) {
 	}, nil
 }
 
-func UpdateArtist(request *dto.UpdateArtistRequest) (*dto.ArtistDTO, error) {
+func (service *artistServiceImpl) UpdateArtist(request *dto.UpdateArtistRequest) (*dto.ArtistDTO, error) {
 	var artist models.Artist
 	utils.ConverseStruct(request, &artist)
 
@@ -46,7 +60,7 @@ func UpdateArtist(request *dto.UpdateArtistRequest) (*dto.ArtistDTO, error) {
 	}, nil
 }
 
-func DeleteAritst(ID uint) (*dto.ArtistDTO, error) {
+func (service *artistServiceImpl) DeleteArtist(ID uint) (*dto.ArtistDTO, error) {
 	var artist models.Artist
 	artist.ID = ID
 	result := db.First(&artist)
@@ -59,7 +73,7 @@ func DeleteAritst(ID uint) (*dto.ArtistDTO, error) {
 	return &artistDTO, nil
 }
 
-func FindAllArtist() (*[]dto.ArtistDTO, error) {
+func (service *artistServiceImpl) FindArtists() (*[]dto.ArtistDTO, error) {
 	var artists []models.Artist
 	result := db.Find(&artists)
 	if result.Error != nil {
@@ -72,7 +86,7 @@ func FindAllArtist() (*[]dto.ArtistDTO, error) {
 	return &artistDTOs, nil
 }
 
-func FindArtist(ID uint) (*dto.ArtistDTO, error) {
+func (service *artistServiceImpl) FindArtist(ID uint) (*dto.ArtistDTO, error) {
 	var artist models.Artist
 	artist.ID = ID
 	result := db.Find(&artist)

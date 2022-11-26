@@ -53,3 +53,33 @@ func GetIDFromRequest(r *http.Request) (uint, error) {
 	ID := uint(ID64)
 	return ID, nil
 }
+
+func GetPagination(r *http.Request) (*dto.Pagination, error) {
+	q := r.URL.Query()
+	page, err := strconv.Atoi(q.Get("page"))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if page == 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(q.Get("page_size"))
+	if err != nil {
+		return nil, err
+	}
+
+	switch {
+	case pageSize > 100:
+		pageSize = 100
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	return &dto.Pagination{
+		Page: page,
+		Size: pageSize,
+	}, nil
+}

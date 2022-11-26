@@ -8,10 +8,26 @@ import (
 	"github.com/doduykhang/musik/pkg/utils"
 )
 
+var (
+	artistService services.ArtistService
+)
+
+func init() {
+	artistService = services.GetAritstServive()
+}
+
 func CreateArtist(w http.ResponseWriter, r *http.Request) {
 	var request dto.CreateArtistRequest
 	utils.ParseBody(r, &request)
-	createdArtist, err := services.CreateArtist(&request)
+
+	err := validate.Struct(&request)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	createdArtist, err := artistService.CreateArtist(&request)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
@@ -22,7 +38,15 @@ func CreateArtist(w http.ResponseWriter, r *http.Request) {
 func UpdateArtist(w http.ResponseWriter, r *http.Request) {
 	var request dto.UpdateArtistRequest
 	utils.ParseBody(r, &request)
-	updatedArtist, err := services.UpdateArtist(&request)
+
+	err := validate.Struct(&request)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	updatedArtist, err := artistService.UpdateArtist(&request)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
@@ -33,10 +57,10 @@ func UpdateArtist(w http.ResponseWriter, r *http.Request) {
 func DeleteArtist(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.GetIDFromRequest(r)
 	if err != nil {
-		utils.ErrorResponse(&w, err.Error(), 500)
+		utils.ErrorResponse(&w, err.Error(), 400)
 		return
 	}
-	deletedArtist, err := services.DeleteAritst(ID)
+	deletedArtist, err := artistService.DeleteArtist(ID)
 
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
@@ -46,7 +70,7 @@ func DeleteArtist(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindAllArtists(w http.ResponseWriter, r *http.Request) {
-	artists, err := services.FindAllArtist()
+	artists, err := artistService.FindArtists()
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
@@ -60,7 +84,7 @@ func FindArtist(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(&w, err.Error(), 400)
 		return
 	}
-	artist, err := services.FindArtist(ID)
+	artist, err := artistService.FindArtist(ID)
 
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
