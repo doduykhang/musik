@@ -7,3 +7,7 @@ func GetAlbumService() AlbumService {
 func GetSongService() SongService {
 	return &songServiceImpl{}
 }
+
+func GetPlaylistService() PlaylistService {
+	return &playlistServiceImpl{}
+}
