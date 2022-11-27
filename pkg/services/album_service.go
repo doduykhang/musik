@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/doduykhang/musik/pkg/constant"
 	"github.com/doduykhang/musik/pkg/dto"
 	"github.com/doduykhang/musik/pkg/models"
@@ -14,8 +16,8 @@ type AlbumService interface {
 	DeleteAlbum(uint) (*dto.AlbumDTO, error)
 	FindAlbums(*dto.FindAlbumRequest) (*[]dto.AlbumDTO, error)
 	FindAlbum(uint) (*dto.AlbumDTO, error)
-	AddSong(*dto.AddSongToAlbumRequest) (*dto.AlbumDTO, error)
-	RemoveSong(*dto.RemoveSongFromAlbumRequest) (*dto.AlbumDTO, error)
+	AddSong(*[]dto.AddSongToAlbumRequest) (*[]dto.AddSongToAlbumRequest, error)
+	RemoveSong(*[]dto.RemoveSongFromAlbumRequest) (*dto.AlbumDTO, error)
 }
 
 type albumServiceImpl struct {
@@ -25,13 +27,18 @@ func (service *albumServiceImpl) CreateAlbum(request *dto.CreateAlbumRequest) (*
 	var album models.Album
 	Map(&album, request)
 
+	err := uploadAlbumImage(&request.ImageFile, &album)
+	if err != nil {
+		return nil, err
+	}
+
 	result := db.Create(&album)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
 	var albumDTO dto.AlbumDTO
-	Map(&albumDTO, album)
+	Map(&albumDTO, &album)
 	return &albumDTO, nil
 }
 func (service *albumServiceImpl) UpdateAlbum(request *dto.UpdateAlbumRequest) (*dto.AlbumDTO, error) {
@@ -109,41 +116,21 @@ func (service *albumServiceImpl) FindAlbum(id uint) (*dto.AlbumDTO, error) {
 	Map(&albumDTO, &album)
 	return &albumDTO, nil
 }
-func (service *albumServiceImpl) AddSong(request *dto.AddSongToAlbumRequest) (*dto.AlbumDTO, error) {
-	var album models.Album
-	result := db.Find(&album, request.AlbumID)
+func (service *albumServiceImpl) AddSong(request *[]dto.AddSongToAlbumRequest) (*[]dto.AddSongToAlbumRequest, error) {
+	var albums []models.AlbumSong
+	Map(&albums, request)
+
+	fmt.Println(albums)
+
+	result := db.Create(&albums)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	var songs []models.Song
-	result = db.Find(&songs, request.SongIDs)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	db.Model(&album).Association("Songs").Append(songs)
-
-	var albumDTO dto.AlbumDTO
-	Map(&albumDTO, &album)
-	return &albumDTO, nil
+	return request, nil
 }
-func (service *albumServiceImpl) RemoveSong(request *dto.RemoveSongFromAlbumRequest) (*dto.AlbumDTO, error) {
-	var album models.Album
-	result := db.Find(&album, request.AlbumID)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	var songs []models.Song
-	result = db.Find(&songs, request.SongIDs)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	db.Model(&album).Association("Songs").Delete(songs)
-
-	var albumDTO dto.AlbumDTO
-	Map(&albumDTO, &album)
-	return &albumDTO, nil
+func (service *albumServiceImpl) RemoveSong(request *[]dto.RemoveSongFromAlbumRequest) (*dto.AlbumDTO, error) {
+	panic("not implement")
 }
 
 func uploadAlbumImage(image *dto.MultipartForm, album *models.Album) error {

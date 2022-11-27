@@ -22,13 +22,14 @@ type UpdateAlbumImageRequest struct {
 }
 
 type AddSongToAlbumRequest struct {
-	SongIDs []uint `json:"songIDs" validate:"required"`
-	AlbumID uint   `json:"albumID" validate:"required"`
+	SongID      uint `json:"songID" validate:"required"`
+	AlbumID     uint `json:"albumID" validate:"required"`
+	TrackNumber uint `json:"track" validate:"required"`
 }
 
 type RemoveSongFromAlbumRequest struct {
-	SongIDs []uint `json:"songIDs" validate:"required"`
-	AlbumID uint   `json:"albumID" validate:"required"`
+	SongID  uint `json:"songID" validate:"required"`
+	AlbumID uint `json:"albumID" validate:"required"`
 }
 
 type FindAlbumRequest struct {

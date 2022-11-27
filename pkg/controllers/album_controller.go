@@ -158,7 +158,7 @@ func FindAlbum(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddSongs(w http.ResponseWriter, r *http.Request) {
-	var request dto.AddSongToAlbumRequest
+	var request []dto.AddSongToAlbumRequest
 	err := utils.ParseBody(r, &request)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 400)
@@ -174,7 +174,7 @@ func AddSongs(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveSongs(w http.ResponseWriter, r *http.Request) {
-	var request dto.RemoveSongFromAlbumRequest
+	var request []dto.RemoveSongFromAlbumRequest
 	err := utils.ParseBody(r, &request)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 400)
