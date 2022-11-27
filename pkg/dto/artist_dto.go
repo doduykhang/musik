@@ -14,6 +14,11 @@ type UpdateArtistRequest struct {
 	ID          uint   `json:"id"`
 }
 
+type UpdateAristImageRequest struct {
+	ID        uint `schema:"id"`
+	ImageFile MultipartForm
+}
+
 type ArtistDTO struct {
 	BaseDTO
 	Name        string `json:"name" validate:"required"`

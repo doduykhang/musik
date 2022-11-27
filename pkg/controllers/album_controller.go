@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	artistService services.ArtistService
+	albumService services.AlbumService
 )
 
 func init() {
-	artistService = services.GetAritstServive()
+	albumService = services.GetAlbumService()
 }
 
-func CreateArtist(w http.ResponseWriter, r *http.Request) {
-	var request dto.CreateArtistRequest
+func CreateAlbum(w http.ResponseWriter, r *http.Request) {
+	var request dto.CreateAlbumRequest
 
 	err := r.ParseMultipartForm(10 << 20)
 
@@ -46,16 +46,16 @@ func CreateArtist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdArtist, err := artistService.CreateArtist(&request)
+	createdAlbum, err := albumService.CreateAlbum(&request)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
 	}
-	utils.JsonResponse(&w, createdArtist)
+	utils.JsonResponse(&w, createdAlbum)
 }
 
-func UpdateArtist(w http.ResponseWriter, r *http.Request) {
-	var request dto.UpdateArtistRequest
+func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
+	var request dto.UpdateAlbumRequest
 	utils.ParseBody(r, &request)
 
 	err := validate.Struct(&request)
@@ -65,16 +65,16 @@ func UpdateArtist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedArtist, err := artistService.UpdateArtist(&request)
+	updatedAlbum, err := albumService.UpdateAlbum(&request)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
 	}
-	utils.JsonResponse(&w, updatedArtist)
+	utils.JsonResponse(&w, updatedAlbum)
 }
 
-func UpdateAritstImage(w http.ResponseWriter, r *http.Request) {
-	var request dto.UpdateAristImageRequest
+func UpdateAlbumImage(w http.ResponseWriter, r *http.Request) {
+	var request dto.UpdateAlbumImageRequest
 
 	err := r.ParseMultipartForm(10 << 20)
 
@@ -103,49 +103,88 @@ func UpdateAritstImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdArtist, err := artistService.UpdateArtistImage(&request)
+	createdAlbum, err := albumService.UpdateAlbumImage(&request)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
 	}
-	utils.JsonResponse(&w, createdArtist)
+	utils.JsonResponse(&w, createdAlbum)
 }
 
-func DeleteArtist(w http.ResponseWriter, r *http.Request) {
+func DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.GetIDFromRequest(r)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 400)
 		return
 	}
-	deletedArtist, err := artistService.DeleteArtist(ID)
+	dto, err := albumService.DeleteAlbum(ID)
 
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
 	}
-	utils.JsonResponse(&w, deletedArtist)
+	utils.JsonResponse(&w, dto)
 }
 
-func FindAllArtists(w http.ResponseWriter, r *http.Request) {
-	artists, err := artistService.FindArtists()
+func FindAllAlbums(w http.ResponseWriter, r *http.Request) {
+	var request dto.FindAlbumRequest
+	err := decoder.Decode(&request, r.URL.Query())
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
 	}
-	utils.JsonResponse(&w, artists)
+
+	dtos, err := albumService.FindAlbums(&request)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+	utils.JsonResponse(&w, dtos)
 }
 
-func FindArtist(w http.ResponseWriter, r *http.Request) {
+func FindAlbum(w http.ResponseWriter, r *http.Request) {
 	ID, err := utils.GetIDFromRequest(r)
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 400)
 		return
 	}
-	artist, err := artistService.FindArtist(ID)
+	dto, err := albumService.FindAlbum(ID)
 
 	if err != nil {
 		utils.ErrorResponse(&w, err.Error(), 500)
 		return
 	}
-	utils.JsonResponse(&w, artist)
+	utils.JsonResponse(&w, dto)
+}
+
+func AddSongs(w http.ResponseWriter, r *http.Request) {
+	var request dto.AddSongToAlbumRequest
+	err := utils.ParseBody(r, &request)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+	dto, err := albumService.AddSong(&request)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+	utils.JsonResponse(&w, dto)
+}
+
+func RemoveSongs(w http.ResponseWriter, r *http.Request) {
+	var request dto.RemoveSongFromAlbumRequest
+	err := utils.ParseBody(r, &request)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+	dto, err := albumService.RemoveSong(&request)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+	utils.JsonResponse(&w, dto)
 }

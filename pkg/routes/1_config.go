@@ -6,4 +6,5 @@ func RegisterRoutes(r *mux.Router) {
 	RegisterAuthRoute(r)
 	RegisterArtistRoute(r)
 	RegisterSongRoute(r)
+	RegisterAlbumRoute(r)
 }

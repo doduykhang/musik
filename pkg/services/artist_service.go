@@ -11,6 +11,7 @@ import (
 type ArtistService interface {
 	CreateArtist(*dto.CreateArtistRequest) (*dto.ArtistDTO, error)
 	UpdateArtist(*dto.UpdateArtistRequest) (*dto.ArtistDTO, error)
+	UpdateArtistImage(*dto.UpdateAristImageRequest) (*dto.ArtistDTO, error)
 	DeleteArtist(uint) (*dto.ArtistDTO, error)
 	FindArtists() (*[]dto.ArtistDTO, error)
 	FindArtist(uint) (*dto.ArtistDTO, error)
@@ -59,6 +60,29 @@ func (service *artistServiceImpl) UpdateArtist(request *dto.UpdateArtistRequest)
 
 	updateResult := db.Save(&artist)
 	if updateResult.Error != nil {
+		return nil, result.Error
+	}
+
+	var artistDTO dto.ArtistDTO
+	Map(&artistDTO, &artist)
+
+	return &artistDTO, nil
+}
+
+func (service *artistServiceImpl) UpdateArtistImage(request *dto.UpdateAristImageRequest) (*dto.ArtistDTO, error) {
+	var artist models.Artist
+	result := db.Find(&artist, request.ID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	err := uploadArtistImage(&request.ImageFile, &artist)
+	if err != nil {
+		return nil, err
+	}
+
+	result = db.Save(&artist)
+	if result.Error != nil {
 		return nil, result.Error
 	}
 
