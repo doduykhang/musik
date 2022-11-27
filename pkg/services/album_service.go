@@ -130,7 +130,17 @@ func (service *albumServiceImpl) AddSong(request *[]dto.AddSongToAlbumRequest) (
 	return request, nil
 }
 func (service *albumServiceImpl) RemoveSong(request *[]dto.RemoveSongFromAlbumRequest) (*dto.AlbumDTO, error) {
-	panic("not implement")
+	var albums []models.AlbumSong
+	Map(&albums, request)
+
+	fmt.Println(albums)
+
+	result := db.Delete(&albums)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &dto.AlbumDTO{}, nil
 }
 
 func uploadAlbumImage(image *dto.MultipartForm, album *models.Album) error {

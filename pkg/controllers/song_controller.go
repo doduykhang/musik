@@ -228,6 +228,38 @@ func FindSongs(w http.ResponseWriter, r *http.Request) {
 	utils.JsonResponse(&w, songs)
 }
 
+func FindSongOfArtist(w http.ResponseWriter, r *http.Request) {
+	ID, err := utils.GetIDFromRequest(r)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	deletedSong, err := songService.FindSongOfArtist(ID)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+	utils.JsonResponse(&w, deletedSong)
+}
+
+func FindSongOfAlbum(w http.ResponseWriter, r *http.Request) {
+	ID, err := utils.GetIDFromRequest(r)
+
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 400)
+		return
+	}
+
+	deletedSong, err := songService.FindSongOfAlbum(ID)
+	if err != nil {
+		utils.ErrorResponse(&w, err.Error(), 500)
+		return
+	}
+	utils.JsonResponse(&w, deletedSong)
+}
+
 func TestUpload(w http.ResponseWriter, r *http.Request) {
 	bytes, handler, err := utils.GetFile(r, "audio")
 	if err != nil {

@@ -16,6 +16,8 @@ type SongService interface {
 	DeleteSong(uint) (*dto.SongDTO, error)
 	FindSongs(*dto.FindSongRequest) (*[]dto.SongDTO, error)
 	FindSong(uint) (*dto.SongDTO, error)
+	FindSongOfArtist(artistID uint) (*[]dto.SongDTO, error)
+	FindSongOfAlbum(albumID uint) (*[]dto.SongDTO, error)
 }
 
 type songServiceImpl struct{}
@@ -28,8 +30,25 @@ func init() {
 	fileService = GetLocalFileService()
 }
 
-func GetSongService() SongService {
-	return &songServiceImpl{}
+func (service *songServiceImpl) FindSongOfArtist(artistID uint) (*[]dto.SongDTO, error) {
+	var artist *models.Artist
+	result := db.Preload("Songs").Find(&artist, artistID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	var songDTOs *[]dto.SongDTO
+	Map(&songDTOs, &artist.Songs)
+	return songDTOs, nil
+}
+func (service *songServiceImpl) FindSongOfAlbum(albumID uint) (*[]dto.SongDTO, error) {
+	var album *models.Album
+	result := db.Preload("Songs").Find(&album, albumID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	var songDTOs *[]dto.SongDTO
+	Map(&songDTOs, &album.Songs)
+	return songDTOs, nil
 }
 
 func (service *songServiceImpl) CreateSong(request *dto.CreateSongRequest) (*dto.SongDTO, error) {
